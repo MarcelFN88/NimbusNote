@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">NimbusNote</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="weather">Weather</string>
+    <string name="notes">Notes</string>
+    <string name="profile">Profile</string>
+    <string name="register">Register</string>
+    <string name="login">Login</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forget_password">Forget Password ?</string>
+    <string name="reset">Reset</string>
+    <string name="name">Name</string>
+    <string name="adress">Address</string>
+    <string name="handy_nummer">Handy Nummer</string>
+    <string name="save">Save</string>
+    <string name="logout">Logout</string>
+    <string name="handy_number">Handy Number</string>
+    <string name="new_note">New Note</string>
+    <string name="note">Note</string>
+    <string name="username">Username</string>
+    <string name="send">Send</string>
+    <string name="new_message">New Message</string>
+    <string name="message_out">Message Out</string>
+    <string name="message_in">Message In</string>
+    <string name="temperatur">Temperatur</string>
+    <string name="ort">Ort</string>
+</resources>

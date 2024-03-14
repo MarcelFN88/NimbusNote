@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675411141477",
+    "project_id": "nimbusnote-84ff3",
+    "storage_bucket": "nimbusnote-84ff3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675411141477:android:32c0c4e486d75a1ad5f78c",
+        "android_client_info": {
+          "package_name": "com.example.nimbusnote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWMxfQhqiHoqjAzS6WqIOFZOeaxnMmE3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
