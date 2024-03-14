@@ -10,12 +10,12 @@ import retrofit2.http.Query
 
 object ApiService {
 
-    const val BASE_URL = "https://api.openweathermap.org"
+    const val BASE_URL = "https://api.openweathermap.org/"
 
     var apiKey = "192688db03dfb0e1627f2b59f6dd8cd4"
 
 
-    const val IMAGE_BASE_URL = "http://openweathermap.org/img/wn"
+    const val IMAGE_BASE_URL = "http://openweathermap.org/img/wn/"
     const val IMAGE_SUFFIX = "@4x.png"
 
 
@@ -30,7 +30,7 @@ object ApiService {
             .build()
 
     interface WeatherApiService {
-        @GET("/data/2.5/weather")
+        @GET("data/2.5/weather")
         suspend fun getWeatherData(
             @Query("q") name: String, @Query("appid") apiKey: String
         ): WeatherData

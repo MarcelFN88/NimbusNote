@@ -7,20 +7,38 @@ import com.example.nimbusnote.data.Repository
 import com.example.nimbusnote.data.model.WeatherData
 import kotlinx.coroutines.launch
 
-class MainViewModel: ViewModel() {
+
+class MainViewModel : ViewModel() {
     private val repository = Repository()
 
-    val weatherData = MutableLiveData<WeatherData?>()
+    // Ändere von einem einzelnen WeatherData Objekt zu einer Liste von WeatherData
+    val weatherList = MutableLiveData<List<WeatherData>>()
     val errorMessage = MutableLiveData<String>()
 
-    fun getWeather(cityName: String) {
+    // Funktion, um Wetterdaten für mehrere Städte zu erhalten
+    fun getWeatherForMultipleCities(cities: List<String>) {
         viewModelScope.launch {
-            val data = repository.getWeatherData(cityName)
-            if (data != null) {
-                weatherData.postValue(data)
+            val weatherDataList = ArrayList<WeatherData>()
+            cities.forEach { cityName ->
+                val data = repository.getWeatherData(cityName)
+                data?.let { weatherDataList.add(it) }
+            }
+            if (weatherDataList.isNotEmpty()) {
+                weatherList.postValue(weatherDataList)
             } else {
                 errorMessage.postValue("Fehler beim Abrufen der Wetterdaten.")
             }
         }
     }
+
+    fun addCity(cityName: String) {
+        viewModelScope.launch {
+            val newWeatherData = repository.getWeatherData(cityName)
+            newWeatherData?.let {
+                val currentList = weatherList.value ?: listOf()
+                weatherList.postValue(currentList + newWeatherData)
+            }
+        }
+    }
+
 }
