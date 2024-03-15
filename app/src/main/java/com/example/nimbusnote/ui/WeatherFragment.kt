@@ -50,9 +50,9 @@ class WeatherFragment : Fragment() {
             }
         }
 
-        val weatherAdapter = WeatherAdapter(listOf()) { cityName ->
-            showRemoveCityDialog(cityName)
-        }
+       val weatherAdapter = WeatherAdapter(listOf()) { cityName ->
+          showRemoveCityDialog(cityName)
+       }
         binding.weatherRecyclerView.adapter = weatherAdapter
 
         mainViewModel.citiesList.observe(viewLifecycleOwner) { cities ->
@@ -73,14 +73,8 @@ class WeatherFragment : Fragment() {
      * @param cityName Name der Stadt, die entfernt werden soll.
      */
     private fun showRemoveCityDialog(cityName: String) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Stadt löschen")
-            .setMessage("Möchten Sie $cityName wirklich löschen?")
-            .setPositiveButton("Löschen") { _, _ ->
                 mainViewModel.removeCity(cityName)
-            }
-            .setNegativeButton("Abbrechen", null)
-            .show()
+
     }
 
     /**

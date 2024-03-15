@@ -1,5 +1,6 @@
 package com.example.nimbusnote.adapter
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -49,9 +50,20 @@ class NoteAdapter(
      */
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val item = dataset[position]
-        holder.binding.NoteTV.text = item.text
-        holder.binding.noteCV.setOnClickListener {
-            viewModel.deleteNote(item)
+        holder.binding.noteTitleTextView.text = item.text
+        holder.binding.noteTitleTextView.setOnLongClickListener {
+            // Erstelle und zeige den AlertDialog
+            AlertDialog.Builder(holder.itemView.context)
+                .setTitle("Notiz löschen")
+                .setMessage("Möchten Sie diese Notiz wirklich löschen?")
+                .setPositiveButton("Löschen") { _, _ ->
+                    // Rufe die deleteNote Methode des ViewModels auf, um die Notiz zu löschen
+                    viewModel.deleteNote(item)
+                }
+                .setNegativeButton("Abbrechen", null)
+                .show()
+            true // Gibt true zurück, um zu signalisieren, dass der Klick gehandhabt wurde
         }
+
     }
 }
