@@ -12,49 +12,48 @@ import com.example.nimbusnote.databinding.FragmentForgotBinding
 import com.example.nimbusnote.viewModels.FirebaseViewModel
 
 /**
- * Fragment für die "Passwort vergessen"-Funktionalität, wo Benutzer ihr Passwort zurücksetzen können.
+ * Fragment für die "Passwort vergessen"-Funktionalität, ermöglicht Benutzern das Zurücksetzen ihres Passworts.
  */
 class ForgotFragment : Fragment() {
 
-    private lateinit var binding: FragmentForgotBinding // ViewBinding für das Layout dieses Fragments
-    private val viewModel: FirebaseViewModel by activityViewModels() // Verweist auf das ViewModel für Firebase-Operationen
+    private lateinit var binding: FragmentForgotBinding
+    private val viewModel: FirebaseViewModel by activityViewModels()
 
     /**
-     * Wird aufgerufen, um das Layout des Fragments zu inflatieren.
+     * Erstellt und gibt die View für dieses Fragment zurück.
+     * Initialisiert das View Binding für das Layout dieses Fragments.
      *
      * @param inflater Der LayoutInflater, der das Layout inflatieren kann.
      * @param container Der Container, in den das Layout eingefügt wird.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
-     * @return Die View für das Fragment.
+     * @param savedInstanceState Zustandsdaten des Fragments.
+     * @return Die erstellte View des Fragments.
      */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentForgotBinding.inflate(layoutInflater)
+        binding = FragmentForgotBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     /**
-     * Wird aufgerufen, nachdem die View vollständig erstellt wurde. Hier werden Event-Listener registriert.
+     * Wird nach der Erstellung der View aufgerufen.
+     * Setzt den OnClickListener für den "Zurücksetzen"-Button und implementiert die Logik
+     * zum Zurücksetzen des Passworts und zur Navigation zurück zum Login-Fragment.
      *
      * @param view Die erstellte View des Fragments.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
+     * @param savedInstanceState Zustandsdaten des Fragments.
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Registriert einen OnClickListener für den "Passwort zurücksetzen"-Button.
         binding.resetBTN.setOnClickListener {
-            val email = binding.email.text.toString()
+            val email = binding.email.text.toString().trim()
 
-            // Überprüft, ob die E-Mail-Adresse nicht leer ist, und fordert dann das Zurücksetzen des Passworts an.
-            if (email != "") {
+            if (email.isNotEmpty()) {
                 viewModel.resetPassword(email)
+                findNavController().navigate(R.id.loginFragment)
             }
-
-            // Navigiert zurück zum Login-Fragment, nachdem der Zurücksetzen-Vorgang initiiert wurde.
-            findNavController().navigate(R.id.loginFragment)
         }
     }
 }

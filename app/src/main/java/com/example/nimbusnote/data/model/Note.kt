@@ -2,9 +2,14 @@ package com.example.nimbusnote.data.model
 
 import com.google.firebase.firestore.DocumentId
 
-data class Note (
+/**
+ * Repräsentiert eine Notiz mit Textinhalt.
+ *
+ * @property text Der Textinhalt der Notiz. Standardmäßig leer.
+ * @property id Die eindeutige ID der Notiz, automatisch von Firebase Firestore zugewiesen. Standardmäßig leer.
+ */
+data class Note(
     val text: String = "",
     @DocumentId
     val id: String = ""
-
 )

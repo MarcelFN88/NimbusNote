@@ -12,21 +12,14 @@ import com.example.nimbusnote.databinding.FragmentNoteBinding
 import com.example.nimbusnote.viewModels.FirebaseViewModel
 
 /**
- * Fragment für die Anzeige und das Hinzufügen von Notizen.
+ * Fragment zur Darstellung und zum Hinzufügen von Notizen.
+ * Erlaubt Benutzern, neue Notizen zu erstellen und vorhandene zu betrachten.
  */
 class NoteFragment : Fragment() {
 
-    private lateinit var binding: FragmentNoteBinding // ViewBinding für das Layout dieses Fragments
-    private val viewModel: FirebaseViewModel by activityViewModels() // ViewModel für Firebase-Operationen
+    private lateinit var binding: FragmentNoteBinding
+    private val viewModel: FirebaseViewModel by activityViewModels()
 
-    /**
-     * Wird aufgerufen, um das Layout des Fragments zu inflatieren.
-     *
-     * @param inflater Der LayoutInflater, der das Layout inflatieren kann.
-     * @param container Der Container, in den das Layout eingefügt wird.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
-     * @return Die View für das Fragment.
-     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,16 +28,10 @@ class NoteFragment : Fragment() {
         return binding.root
     }
 
-    /**
-     * Wird aufgerufen, nachdem die View vollständig erstellt wurde. Hier werden Event-Listener registriert und Daten geladen.
-     *
-     * @param view Die erstellte View des Fragments.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Hört auf Änderungen in der Notiz-Datenbank und aktualisiert das RecyclerView, wenn Änderungen festgestellt werden.
+        // Lauscht auf Änderungen in der Liste der Notizen und aktualisiert die Anzeige entsprechend.
         viewModel.notesRef.addSnapshotListener { value, error ->
             if (error == null && value != null) {
                 val myNoteList = value.toObjects(Note::class.java)
@@ -52,12 +39,12 @@ class NoteFragment : Fragment() {
             }
         }
 
-        // Fügt eine neue Notiz hinzu, wenn der "Notiz speichern"-Button geklickt wird.
+        // Fügt eine neue Notiz zur Datenbank hinzu, wenn der Benutzer den Speichern-Button betätigt.
         binding.saveNoteBTN.setOnClickListener {
             val text = binding.noteET.text.toString()
             if (text.isNotEmpty()) {
                 viewModel.saveNote(Note(text = text))
-                binding.noteET.setText("") // Leert das Eingabefeld nach dem Speichern
+                binding.noteET.setText("") // Setzt das Eingabefeld nach dem Speichern zurück
             }
         }
     }

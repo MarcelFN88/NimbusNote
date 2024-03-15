@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -19,26 +18,27 @@ import com.example.nimbusnote.viewModels.MainViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 /**
- * Fragment für die Profilanzeige und -bearbeitung des Benutzers.
+ * Das Fragment `ProfileFragment` ermöglicht es dem Benutzer, sein Profil zu betrachten und zu bearbeiten.
+ * Dies beinhaltet die Möglichkeit, Profilinformationen wie Namen, Telefonnummer, Adresse und Benutzernamen zu aktualisieren.
+ * Zusätzlich kann der Benutzer ein Profilbild auswählen und hochladen. Das Fragment nutzt Firebase zur Authentifizierung
+ * und Speicherung der Benutzerdaten sowie Coil zur Bildverarbeitung.
  */
 class ProfileFragment : Fragment() {
 
-    private lateinit var binding: FragmentProfileBinding // ViewBinding für das Layout dieses Fragments
-    private val viewModel: FirebaseViewModel by activityViewModels() // ViewModel für Firebase-Operationen
-    private val mainViewModel: MainViewModel by activityViewModels() // Ein weiteres ViewModel für Hauptoperationen, falls benötigt
-    private lateinit var auth: FirebaseAuth // Firebase-Authentifizierungsinstanz
+    private lateinit var binding: FragmentProfileBinding
+    private val viewModel: FirebaseViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
+    private lateinit var auth: FirebaseAuth
 
-    // ActivityResultLauncher für das Auswählen eines Bildes aus der Galerie
-    private val getContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                viewModel.uploadImage(it) // Lädt das ausgewählte Bild hoch
-            }
+    private var selectedImageUri: Uri? = null
+
+    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            binding.image.load(it) // Zeigt das ausgewählte Bild direkt an
         }
+    }
 
-    /**
-     * Wird aufgerufen, um das Layout des Fragments zu inflatieren.
-     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,20 +47,15 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
-    /**
-     * Wird aufgerufen, nachdem die View vollständig erstellt wurde.
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Bildauswahl starten, wenn auf das Profilbild geklickt wird
         binding.image.setOnClickListener {
             getContent.launch("image/*")
         }
 
         auth = FirebaseAuth.getInstance()
 
-        // Lädt das Benutzerprofil und zeigt es in den entsprechenden Feldern an
         viewModel.userRef.addSnapshotListener { value, error ->
             if (error == null && value != null) {
                 val myProfile = value.toObject(User::class.java)
@@ -69,42 +64,41 @@ class ProfileFragment : Fragment() {
                     binding.handyNumberET.setText(it.handyNumber)
                     binding.adressET.setText(it.adress)
                     binding.userNameET.setText(it.userName)
-                    binding.image.load(it.userImage) // Verwendet Coil zum Laden des Bildes
+                    if (it.userImage.isNotEmpty()) {
+                        binding.image.load(it.userImage) // Lädt das Profilbild, falls vorhanden
+                    }
                 }
             }
         }
 
-        // Loggt den Benutzer aus
         binding.Logout.setOnClickListener {
             viewModel.logout()
         }
 
-        // Beobachtet den aktuellen Benutzer und navigiert zum Login-Fragment, wenn der Benutzer abgemeldet ist
         viewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user == null) {
                 findNavController().navigate(R.id.loginFragment)
             }
         }
 
-        // Speichert die aktualisierten Benutzerdaten, wenn auf "Speichern" geklickt wird
         binding.saveBTN.setOnClickListener {
             val name = binding.nameET.text.toString()
             val handyNumber = binding.handyNumberET.text.toString()
             val adress = binding.adressET.text.toString()
             val userName = binding.userNameET.text.toString()
-            val image = binding.image.drawable.toBitmap().toString()
 
             if (name.isNotEmpty() && handyNumber.isNotEmpty() && adress.isNotEmpty() && userName.isNotEmpty()) {
-                val newUser = User(name, handyNumber, adress, userName, image)
+                val newUser = User(name, handyNumber, adress, userName, "")
                 viewModel.updateUser(newUser)
+                selectedImageUri?.let { viewModel.uploadImage(it) } // Lädt das neue Bild hoch, falls ausgewählt
             }
         }
 
         viewModel.userProfileImageUrl.observe(viewLifecycleOwner) { imageUrl ->
             if (imageUrl.isNotEmpty()) {
                 binding.image.load(imageUrl) {
-                    placeholder(R.drawable.ic_profile_placeholder) // Setzt ein Platzhalterbild
-                    error(R.drawable.ic_error) // Setzt ein Fehlerbild
+                    placeholder(R.drawable.ic_profile_placeholder)
+                    error(R.drawable.ic_error)
                 }
             }
         }

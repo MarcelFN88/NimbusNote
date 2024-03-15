@@ -1,6 +1,5 @@
 package com.example.nimbusnote.ui
 
-
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,51 +15,41 @@ import com.example.nimbusnote.databinding.FragmentWeatherBinding
 import com.example.nimbusnote.viewModels.FirebaseViewModel
 import com.example.nimbusnote.viewModels.MainViewModel
 
-
 /**
- * Fragment zur Anzeige des Wetters und einer Benutzerliste.
+ * Das `WeatherFragment` ist verantwortlich für die Darstellung von Wetterinformationen und einer Liste von Benutzern.
+ * Es ermöglicht dem Benutzer, Städte zur Wetterbeobachtung hinzuzufügen oder zu entfernen und zeigt eine aktuelle Liste
+ * von Benutzern an, die für Chat-Funktionen verfügbar sind. Das Fragment nutzt zwei ViewModel-Instanzen: `FirebaseViewModel`
+ * für Benutzerdaten und `MainViewModel` für Wetterdaten. Die Darstellung erfolgt durch zwei separate RecyclerViews, einen für
+ * das Wetter und einen für die Benutzerliste. Dialoge ermöglichen das einfache Hinzufügen und Entfernen von Städten.
  */
 class WeatherFragment : Fragment() {
     private lateinit var binding: FragmentWeatherBinding
     private val viewModel: FirebaseViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
-    /**
-     * Inflatiert das Layout für dieses Fragment.
-     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentWeatherBinding.inflate(layoutInflater)
+        binding = FragmentWeatherBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    /**
-     * Initialisiert das Fragment, nachdem die Ansicht erstellt wurde.
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        // Beobachtet die Benutzerliste aus dem ViewModel und aktualisiert den RecyclerView bei Änderungen.
         viewModel.users.observe(viewLifecycleOwner) { userList ->
             binding.chatUserRV.adapter = UserAdapter(userList, viewModel)
-
         }
 
-        // Fügt einen SnapshotListener hinzu, um Änderungen in der Benutzerliste in Echtzeit zu erfassen.
         viewModel.usersRef.addSnapshotListener { value, error ->
             if (error == null && value != null) {
                 val userList = value.map { it.toObject(User::class.java) }.toMutableList()
-                // Entfernt den aktuellen Benutzer aus der Liste, um Selbstgespräche zu vermeiden.
                 userList.removeAll { it.userId == viewModel.currentUserId }
                 binding.chatUserRV.adapter = UserAdapter(userList, viewModel)
             }
         }
 
-
-        // Initialisiere den RecyclerView für die Wetterdaten
         val weatherAdapter = WeatherAdapter(listOf()) { cityName ->
             showRemoveCityDialog(cityName)
         }
@@ -79,6 +68,10 @@ class WeatherFragment : Fragment() {
         }
     }
 
+    /**
+     * Zeigt einen Dialog zum Entfernen einer Stadt aus der Liste der beobachteten Städte.
+     * @param cityName Name der Stadt, die entfernt werden soll.
+     */
     private fun showRemoveCityDialog(cityName: String) {
         AlertDialog.Builder(requireContext())
             .setTitle("Stadt löschen")
@@ -90,6 +83,9 @@ class WeatherFragment : Fragment() {
             .show()
     }
 
+    /**
+     * Zeigt einen Dialog zum Hinzufügen einer neuen Stadt zur Liste der beobachteten Städte.
+     */
     private fun showAddCityDialog() {
         val editText = EditText(context).apply {
             hint = "Stadtname"

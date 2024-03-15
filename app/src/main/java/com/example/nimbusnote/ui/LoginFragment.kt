@@ -14,22 +14,15 @@ import com.example.nimbusnote.viewModels.FirebaseViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 /**
- * Fragment für die Login-Funktionalität, das dem Benutzer ermöglicht, sich anzumelden oder zu registrieren.
+ * Fragment zur Handhabung der Login- und Registrierungsfunktionalität.
+ * Ermöglicht dem Benutzer, sich anzumelden, zu registrieren oder das Passwort zurückzusetzen.
  */
 class LoginFragment : Fragment() {
 
-    private lateinit var binding: FragmentLoginBinding // ViewBinding für das Layout dieses Fragments
-    private lateinit var auth: FirebaseAuth // Firebase-Authentifizierungsinstanz
-    private val viewModel: FirebaseViewModel by activityViewModels() // ViewModel für Firebase-Operationen
+    private lateinit var binding: FragmentLoginBinding
+    private lateinit var auth: FirebaseAuth
+    private val viewModel: FirebaseViewModel by activityViewModels()
 
-    /**
-     * Wird aufgerufen, um das Layout des Fragments zu inflatieren.
-     *
-     * @param inflater Der LayoutInflater, der das Layout inflatieren kann.
-     * @param container Der Container, in den das Layout eingefügt wird.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
-     * @return Die View für das Fragment.
-     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,26 +31,17 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    /**
-     * Wird aufgerufen, nachdem die View vollständig erstellt wurde. Hier werden Event-Listener registriert.
-     *
-     * @param view Die erstellte View des Fragments.
-     * @param savedInstanceState Ein Bundle mit gespeicherten Zustandsdaten.
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
 
-        // Setzt das App-Logo.
         binding.appLogo.setImageResource(R.drawable.ic_logo)
 
-        // Wechselt zum Registrierungs-Layout, wenn auf "Registrieren" geklickt wird.
         binding.signUp.setOnClickListener {
             toggleSignUpSignIn(true)
         }
 
-        // Versucht, einen neuen Benutzer zu registrieren, wenn auf "Registrieren" Button geklickt wird.
         binding.signUpBTN.setOnClickListener {
             val email = binding.emailET2.text.toString()
             val pass = binding.passET2.text.toString()
@@ -70,12 +54,10 @@ class LoginFragment : Fragment() {
             }
         }
 
-        // Wechselt zum Login-Layout, wenn auf "Anmelden" geklickt wird.
         binding.signIn.setOnClickListener {
             toggleSignUpSignIn(false)
         }
 
-        // Versucht, den Benutzer anzumelden, wenn auf "Anmelden" Button geklickt wird.
         binding.signInBTN.setOnClickListener {
             val email = binding.emailET.text.toString()
             val pass = binding.passET.text.toString()
@@ -87,12 +69,10 @@ class LoginFragment : Fragment() {
             }
         }
 
-        // Navigiert zum "Passwort vergessen"-Fragment, wenn auf den entsprechenden Text geklickt wird.
         binding.forgotPassword.setOnClickListener {
             findNavController().navigate(R.id.forgotFragment)
         }
 
-        // Beobachtet den aktuellen Benutzer und navigiert zum Wetter-Fragment, wenn ein Benutzer angemeldet ist.
         viewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 findNavController().navigate(R.id.weatherFragment)
@@ -101,9 +81,9 @@ class LoginFragment : Fragment() {
     }
 
     /**
-     * Hilfsfunktion zum Umschalten zwischen Anmelde- und Registrierungs-Layout.
+     * Wechselt zwischen der Anzeige der Registrierungs- und Anmeldefenster.
      *
-     * @param showSignUp Wenn true, wird das Registrierungs-Layout angezeigt, sonst das Anmelde-Layout.
+     * @param showSignUp Bestimmt, ob das Registrierungsfenster angezeigt werden soll.
      */
     private fun toggleSignUpSignIn(showSignUp: Boolean) {
         if (showSignUp) {

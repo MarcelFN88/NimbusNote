@@ -1,5 +1,6 @@
 package com.example.nimbusnote
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.drawable.AnimationDrawable
 import android.location.Location
@@ -16,50 +17,78 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import android.Manifest
 
+/**
+ * MainActivity dient als der Einstiegspunkt für die Benutzer-Interface-Komponenten der App.
+ * Sie initialisiert Firebase, verwaltet die Navigation zwischen den verschiedenen Fragmenten und
+ * handhabt die Standortdienste zur Erfassung des letzten bekannten Standorts des Benutzers.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        background()
 
+        initializeFirebase()
+        initializeLocationClient()
+        setupBackgroundAnimation()
+        setupNavigation()
+    }
+
+    /**
+     * Initialisiert Firebase und die Authentifizierungsdienste.
+     */
+    private fun initializeFirebase() {
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
+    }
 
+    /**
+     * Initialisiert den FusedLocationProviderClient für den Zugriff auf die Standortdienste.
+     */
+    private fun initializeLocationClient() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getLastLocation()
+    }
 
-        val navHost =
-            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+    /**
+     * Richtet die Hintergrundanimation für die Hauptaktivität ein.
+     */
+    private fun setupBackgroundAnimation() {
+        val rootView = findViewById<ConstraintLayout>(R.id.rootView)
+        val drawable: AnimationDrawable = rootView.background as AnimationDrawable
+        drawable.setExitFadeDuration(1200)
+        drawable.start()
+    }
+
+    /**
+     * Konfiguriert die Navigation und das BottomNavigationView.
+     */
+    private fun setupNavigation() {
+        val navHost = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         binding.bottomNavigationView.setupWithNavController(navHost.navController)
         val navController = navHost.navController
 
+        // Passt die Sichtbarkeit der BottomNavigationView basierend auf der aktuellen Destination an.
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            Log.d("MainActivity", "Navigiere zu Destination mit ID: ${destination.id}")
             when (destination.id) {
-                R.id.chatFragment,
-                R.id.loginFragment -> {
-                    binding.bottomNavigationView.visibility = BottomNavigationView.GONE
-                }
-
-                else -> {
-                    binding.bottomNavigationView.visibility = BottomNavigationView.VISIBLE
-                }
+                R.id.chatFragment, R.id.loginFragment -> binding.bottomNavigationView.visibility = BottomNavigationView.GONE
+                else -> binding.bottomNavigationView.visibility = BottomNavigationView.VISIBLE
             }
         }
     }
 
+    /**
+     * Ermittelt den letzten bekannten Standort des Benutzers und loggt die Breiten- und Längengrade.
+     */
     private fun getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 101)
             return
         }
@@ -70,14 +99,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-
-    private fun background() {
-        val rootView = findViewById<ConstraintLayout>(R.id.rootView)
-        val drawable: AnimationDrawable = rootView.background as AnimationDrawable
-        drawable.setExitFadeDuration(1200)
-        drawable.start()
-    }
-
 }
-
