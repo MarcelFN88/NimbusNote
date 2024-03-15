@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.nimbusnote.R
 import com.example.nimbusnote.data.model.User
 import com.example.nimbusnote.databinding.ItemUserBinding
@@ -29,7 +31,15 @@ class UserAdapter(
         val item = dataset[position]
         holder.binding.userNameTV.text = item.userName
 
-        holder.binding.userChatCV.setOnClickListener {
+        // Lade das Profilbild mit Glide
+// Innerhalb der onBindViewHolder Methode deines UserAdapters
+        Glide.with(holder.itemView.context)
+            .load(item.userImage) // URL des Profilbilds
+            .apply(RequestOptions().circleCrop()) // Macht das Bild rund
+            .placeholder(R.drawable.ic_profile_placeholder) // Platzhalter
+            .into(holder.binding.userProfileImageView)
+
+        holder.binding.userProfileImageView.setOnClickListener {
             viewModel.setCurrentChat(item.userId)
             holder.itemView.findNavController().navigate(R.id.chatFragment)
         }

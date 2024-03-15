@@ -7,17 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".ui.WeatherFragment">
 
+    <!-- Weather RecyclerView mit einer festen Höhe (Ändere die Höhe nach Bedarf) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/weatherRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.4"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/addCityButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Plus Button direkt unter der weatherRecyclerView positionieren -->
+    <!-- Plus Button direkt unter der weatherRecyclerView -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addCityButton"
         android:layout_width="wrap_content"
@@ -28,13 +30,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- ChatUser RecyclerView mit einer festen Höhe -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatUserRV"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.4"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/addCityButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

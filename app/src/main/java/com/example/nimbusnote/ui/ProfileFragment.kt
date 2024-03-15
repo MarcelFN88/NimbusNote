@@ -99,5 +99,14 @@ class ProfileFragment : Fragment() {
                 viewModel.updateUser(newUser)
             }
         }
+
+        viewModel.userProfileImageUrl.observe(viewLifecycleOwner) { imageUrl ->
+            if (imageUrl.isNotEmpty()) {
+                binding.image.load(imageUrl) {
+                    placeholder(R.drawable.ic_profile_placeholder) // Setzt ein Platzhalterbild
+                    error(R.drawable.ic_error) // Setzt ein Fehlerbild
+                }
+            }
+        }
     }
 }

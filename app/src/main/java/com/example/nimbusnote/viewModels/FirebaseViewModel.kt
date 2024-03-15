@@ -2,7 +2,6 @@ package com.example.nimbusnote.viewModels
 
 import android.net.Uri
 import android.util.Log
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,6 +31,11 @@ class FirebaseViewModel : ViewModel() {
     val currentUser: MutableLiveData<FirebaseUser?>
         get() = _currentUser
 
+    // LiveData für die Profilbild-URL
+    private val _userProfileImageUrl = MutableLiveData<String>()
+    val userProfileImageUrl: LiveData<String>
+        get() = _userProfileImageUrl
+
     lateinit var userRef: DocumentReference
     lateinit var currentChat: DocumentReference
 
@@ -52,21 +56,24 @@ class FirebaseViewModel : ViewModel() {
 
 
     fun uploadImage(uri: Uri) {
-        val imagesRef = storageRef.child("image/${auth.currentUser!!.uid}/userImage")
+        val imagesRef = storageRef.child("users/${auth.currentUser!!.uid}/profile.jpg")
         val uploadTask = imagesRef.putFile(uri)
 
-        uploadTask.addOnCompleteListener() {
-            imagesRef.downloadUrl.addOnCompleteListener {
-                if (it.isSuccessful) {
-                    setUserImage(it.result)
-                }
+        uploadTask.addOnSuccessListener {
+            imagesRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                setUserImage(downloadUri.toString())
             }
+        }.addOnFailureListener {
+            // Fehlerbehandlung
         }
     }
 
-    private fun setUserImage(uri: Uri) {
-        userRef.update("userImage", uri.toString())
+    private fun setUserImage(uri: String) {
+        userRef.update("userImage", uri.toString()).addOnSuccessListener {
+            _userProfileImageUrl.postValue(uri.toString())
+        }
     }
+
 
     fun saveNote(note: Note) {
         notesRef.add(note)
@@ -157,5 +164,6 @@ class FirebaseViewModel : ViewModel() {
         ids = ids.sorted()
         return ids[0] + ids[1]
     }
+
 
 }

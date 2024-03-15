@@ -42,6 +42,7 @@ class WeatherFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         // Beobachtet die Benutzerliste aus dem ViewModel und aktualisiert den RecyclerView bei Änderungen.
         viewModel.users.observe(viewLifecycleOwner) { userList ->
             binding.chatUserRV.adapter = UserAdapter(userList, viewModel)
@@ -60,35 +61,49 @@ class WeatherFragment : Fragment() {
 
 
         // Initialisiere den RecyclerView für die Wetterdaten
-        val weatherAdapter = WeatherAdapter(listOf())
+        val weatherAdapter = WeatherAdapter(listOf()) { cityName ->
+            showRemoveCityDialog(cityName)
+        }
         binding.weatherRecyclerView.adapter = weatherAdapter
 
-        mainViewModel.weatherList.observe(viewLifecycleOwner) { weatherList ->
-            weatherAdapter.updateWeatherList(weatherList) // Stelle sicher, dass deine WeatherAdapter-Klasse eine solche Methode hat
+        mainViewModel.citiesList.observe(viewLifecycleOwner) { cities ->
+            mainViewModel.loadWeatherForSavedCities(cities)
         }
 
-        // Beispiel: Füge Wetterdaten für mehrere Städte hinzu
-        mainViewModel.getWeatherForMultipleCities(listOf("Berlin", "München", "Hamburg"))
+        mainViewModel.weatherList.observe(viewLifecycleOwner) { weatherList ->
+            weatherAdapter.updateWeatherList(weatherList)
+        }
 
         binding.addCityButton.setOnClickListener {
-            // Dialog anzeigen, um eine neue Stadt hinzuzufügen
             showAddCityDialog()
         }
     }
-    private fun showAddCityDialog() {
-        val editText = EditText(context)
-        AlertDialog.Builder(context)
-            .setTitle("Stadt hinzufügen")
-            .setView(editText)
-            .setPositiveButton("Hinzufügen") { dialog, which ->
-                val cityName = editText.text.toString()
-                if (cityName.isNotBlank()) {
-                    // Füge die Stadt hinzu und aktualisiere die Wetterinformationen
-                    mainViewModel.addCity(cityName)
-                }
+
+    private fun showRemoveCityDialog(cityName: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Stadt löschen")
+            .setMessage("Möchten Sie $cityName wirklich löschen?")
+            .setPositiveButton("Löschen") { _, _ ->
+                mainViewModel.removeCity(cityName)
             }
             .setNegativeButton("Abbrechen", null)
             .show()
     }
 
+    private fun showAddCityDialog() {
+        val editText = EditText(context).apply {
+            hint = "Stadtname"
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Stadt hinzufügen")
+            .setView(editText)
+            .setPositiveButton("Hinzufügen") { _, _ ->
+                val cityName = editText.text.toString()
+                if (cityName.isNotBlank()) {
+                    mainViewModel.saveCity(cityName)
+                }
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
+    }
 }
