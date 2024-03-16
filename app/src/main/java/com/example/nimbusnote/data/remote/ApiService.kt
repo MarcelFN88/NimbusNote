@@ -14,7 +14,7 @@ import retrofit2.http.Query
 object ApiService {
 
     // Basis-URL der OpenWeatherMap-API.
-    const val BASE_URL = "https://api.openweathermap.org/"
+    private const val BASE_URL = "https://api.openweathermap.org/"
 
     // Ihr API-Schlüssel für den Zugriff auf die OpenWeatherMap-API.
     var apiKey = "192688db03dfb0e1627f2b59f6dd8cd4"

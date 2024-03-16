@@ -3,36 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/weatherFragment">
 
     <fragment
         android:id="@+id/weatherFragment"
         android:name="com.example.nimbusnote.ui.WeatherFragment"
         android:label="fragment_weather"
         tools:layout="@layout/fragment_weather" />
-    <fragment
-        android:id="@+id/profileFragment"
-        android:name="com.example.nimbusnote.ui.ProfileFragment"
-        android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" />
-    <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.nimbusnote.ui.LoginFragment"
-        android:label="fragment_login"
-        tools:layout="@layout/fragment_login" />
-    <fragment
-        android:id="@+id/forgotFragment"
-        android:name="com.example.nimbusnote.ui.ForgotFragment"
-        android:label="fragment_forgot"
-        tools:layout="@layout/fragment_forgot" />
-    <fragment
-        android:id="@+id/noteFragment"
-        android:name="com.example.nimbusnote.ui.NoteFragment"
-        android:label="fragment_note"
-        tools:layout="@layout/fragment_note" />
-    <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.example.nimbusnote.ui.ChatFragment"
-        android:label="fragment_chat"
-        tools:layout="@layout/fragment_chat" />
 </navigation>
