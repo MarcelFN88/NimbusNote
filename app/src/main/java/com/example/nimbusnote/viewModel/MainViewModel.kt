@@ -191,7 +191,8 @@ class MainViewModel: ViewModel() {
                             cities?.forEach { cityName ->
                                 fetchWeatherData(cityName)
                             }
-                            fetchedCities.addAll(cities ?: emptyList()) // Aktualisieren Sie die Liste der bereits abgerufenen Städte
+                            fetchedCities.clear() // Clear the fetchedCities list
+                            fetchedCities.addAll(cities ?: emptyList()) // Update the fetchedCities list with cities of the current user
                         } else {
                             Log.e("MainViewModel", "No such document")
                         }
@@ -318,5 +319,6 @@ class MainViewModel: ViewModel() {
             }
         }
     }
+
 
 }

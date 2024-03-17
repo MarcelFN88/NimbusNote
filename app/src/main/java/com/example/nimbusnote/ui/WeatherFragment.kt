@@ -44,7 +44,8 @@ class WeatherFragment : Fragment() {
 
 
         viewModel.weatherList.observe(viewLifecycleOwner) { weatherList ->
-            weatherAdapter.setWeatherList(weatherList)        }
+            weatherAdapter.setWeatherList(weatherList)
+        }
 
 
 
