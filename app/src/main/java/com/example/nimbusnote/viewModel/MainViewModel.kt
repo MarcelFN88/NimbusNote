@@ -63,18 +63,21 @@ class MainViewModel: ViewModel() {
     private fun initializeUserRef(userId: String) {
         userRef = store.collection("Users").document(userId)
     }
-
+    private val fetchedCities = mutableListOf<String>()
     private fun fetchWeatherData(cityName: String) {
-        viewModelScope.launch {
-            try {
-                val weatherData = repository.getWeatherData(cityName)
-                weatherData?.let {
-                    val updatedList = (_weatherList.value ?: emptyList()).toMutableList()
-                    updatedList.add(weatherData)
-                    _weatherList.value = updatedList
+        if (cityName !in fetchedCities) {
+            viewModelScope.launch {
+                try {
+                    val weatherData = repository.getWeatherData(cityName)
+                    weatherData?.let {
+                        val updatedList = (_weatherList.value ?: mutableListOf()).toMutableList()
+                        updatedList.add(weatherData)
+                        _weatherList.value = updatedList
+                        fetchedCities.add(cityName) // Aktualisieren Sie die Liste der bereits abgerufenen Städte
+                    }
+                } catch (_: Exception) {
+                    // Fehlerbehandlung
                 }
-            } catch (_: Exception) {
-
             }
         }
     }
@@ -188,6 +191,7 @@ class MainViewModel: ViewModel() {
                             cities?.forEach { cityName ->
                                 fetchWeatherData(cityName)
                             }
+                            fetchedCities.addAll(cities ?: emptyList()) // Aktualisieren Sie die Liste der bereits abgerufenen Städte
                         } else {
                             Log.e("MainViewModel", "No such document")
                         }
@@ -314,9 +318,5 @@ class MainViewModel: ViewModel() {
             }
         }
     }
-
-
-
-
 
 }

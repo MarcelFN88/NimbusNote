@@ -31,7 +31,11 @@ class WeatherFragment : Fragment() {
         binding = FragmentWeatherBinding.inflate(inflater, container, false)
         return binding.root
     }
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Entfernen Sie den Observer, um zu verhindern, dass er nach der Zerstörung des Fragments aktualisiert wird
+        viewModel.weatherList.removeObservers(viewLifecycleOwner)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,8 +44,7 @@ class WeatherFragment : Fragment() {
 
 
         viewModel.weatherList.observe(viewLifecycleOwner) { weatherList ->
-            weatherAdapter.updateWeatherList(weatherList)
-        }
+            weatherAdapter.setWeatherList(weatherList)        }
 
 
 

@@ -65,6 +65,11 @@ class WeatherAdapter(
         this.weatherList = newWeatherList.toMutableList()
         notifyDataSetChanged()
     }
+    fun setWeatherList(newWeatherList: List<WeatherData>) {
+        weatherList.clear() // Vorhandene Daten löschen
+        weatherList.addAll(newWeatherList) // Neue Daten hinzufügen
+        notifyDataSetChanged()
+    }
 
 
 }
