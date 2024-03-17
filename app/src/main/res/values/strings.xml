@@ -28,4 +28,5 @@
     <string name="message_in">Message In</string>
     <string name="temperatur">Temperatur</string>
     <string name="ort">Ort</string>
+    <string name="stadt">Stadt</string>
 </resources>

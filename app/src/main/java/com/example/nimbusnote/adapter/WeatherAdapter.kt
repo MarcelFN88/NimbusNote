@@ -16,8 +16,8 @@ import com.example.nimbusnote.data.model.WeatherData
 import com.example.nimbusnote.data.remote.ApiService
 
 class WeatherAdapter(
-    private var weatherList: List<WeatherData>,
-    private val onDeleteClickListener: (WeatherData) -> Unit
+    private var weatherList: MutableList<WeatherData>,
+    private val onItemClickListener: (WeatherData) -> Unit
 ) : RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
 
     inner class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -29,10 +29,11 @@ class WeatherAdapter(
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    val weatherData = weatherList[position]
-                    onDeleteClickListener(weatherData)
+                    val item = weatherList[position]
+                    onItemClickListener.invoke(item)
                 }
             }
+
         }
     }
 
@@ -53,29 +54,17 @@ class WeatherAdapter(
             .load("${ApiService.IMAGE_BASE_URL}/${item.weather?.firstOrNull()?.icon}${ApiService.IMAGE_SUFFIX}")
             .placeholder(R.drawable.ic_placeholder)
             .error(R.drawable.ic_error)
-            .into(object : CustomTarget<Drawable>() {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    holder.weatherIconImageView.setImageDrawable(resource)
-                }
+            .into(holder.weatherIconImageView)
 
-                override fun onLoadCleared(placeholder: Drawable?) {
-                    // Place holder cleaning code if needed
-                }
-
-                override fun onLoadFailed(errorDrawable: Drawable?) {
-                    // Error handling code here
-                    Log.e("Glide", "Error loading image")
-                    holder.weatherIconImageView.setImageDrawable(errorDrawable)
-                }
-            })
 
     }
 
     override fun getItemCount() = weatherList.size
 
     fun updateWeatherList(newWeatherList: List<WeatherData>) {
-        this.weatherList = newWeatherList
+        this.weatherList = newWeatherList.toMutableList()
         notifyDataSetChanged()
     }
+
 
 }

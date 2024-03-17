@@ -5,11 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nimbusnote.data.model.Note
 import com.example.nimbusnote.databinding.ItemNoteBinding
-import com.example.nimbusnote.viewModel.FirebaseViewModel
+import com.example.nimbusnote.viewModel.MainViewModel
 
 class NoteAdapter(
     private val dataset: List<Note>,
-    private val viewModel: FirebaseViewModel
+    private val viewModel: MainViewModel
 ): RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     inner class NoteViewHolder (val binding: ItemNoteBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -24,7 +24,7 @@ class NoteAdapter(
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val item = dataset[position]
-        holder.binding.NoteTV.text = item.text
+        holder.binding.noteTV.text = item.text
         holder.binding.noteCV.setOnClickListener {
             viewModel.deleteNote(item)
         }
