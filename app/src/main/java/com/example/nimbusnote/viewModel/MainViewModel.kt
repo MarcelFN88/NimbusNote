@@ -302,8 +302,9 @@ class MainViewModel: ViewModel() {
                 userDocRef.update("cities", FieldValue.arrayRemove(cityName))
                     .addOnSuccessListener {
                         Log.d("MainViewModel", "City deleted successfully")
-                        val updatedList = _weatherList.value?.filter { it.name != cityName }
-                        _weatherList.value = updatedList?.toMutableList()
+                        // Aktualisiere die Liste der Wetterdaten, um die gelöschte Stadt zu entfernen
+                        val updatedWeatherList = _weatherList.value?.filter { it.name != cityName }
+                        _weatherList.value = updatedWeatherList?.toMutableList()
                     }
                     .addOnFailureListener { e ->
                         Log.e("MainViewModel", "Error deleting city: $e")
@@ -313,6 +314,9 @@ class MainViewModel: ViewModel() {
             }
         }
     }
+
+
+
 
 
 }
