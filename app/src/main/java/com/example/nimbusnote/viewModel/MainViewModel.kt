@@ -20,8 +20,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 
-
-class MainViewModel: ViewModel() {
+/**
+ * ViewModel für die Hauptfunktionen der App.
+ */
+class MainViewModel : ViewModel() {
 
     private val repository = Repository()
     private val auth = FirebaseAuth.getInstance()
@@ -54,16 +56,23 @@ class MainViewModel: ViewModel() {
                 loadNotes()
                 loadCities()
                 currentUserId = auth.currentUser!!.uid
-
             }
         }
     }
 
-
+    /**
+     * Initialisiert den Benutzer-Verweis.
+     * @param userId Die ID des aktuellen Benutzers.
+     */
     private fun initializeUserRef(userId: String) {
         userRef = store.collection("Users").document(userId)
     }
+
     private val fetchedCities = mutableListOf<String>()
+    /**
+     * Holt Wetterdaten für den angegebenen Städtenamen.
+     * @param cityName Der Name der Stadt, für die Wetterdaten abgerufen werden sollen.
+     */
     private fun fetchWeatherData(cityName: String) {
         if (cityName !in fetchedCities) {
             viewModelScope.launch {
@@ -73,7 +82,7 @@ class MainViewModel: ViewModel() {
                         val updatedList = (_weatherList.value ?: mutableListOf()).toMutableList()
                         updatedList.add(weatherData)
                         _weatherList.value = updatedList
-                        fetchedCities.add(cityName) // Aktualisieren Sie die Liste der bereits abgerufenen Städte
+                        fetchedCities.add(cityName)
                     }
                 } catch (_: Exception) {
                     // Fehlerbehandlung
@@ -82,96 +91,123 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    /**
+     * Lädt ein Bild in Firebase Storage hoch.
+     * @param uri Die URI des hochzuladenden Bildes.
+     */
     fun uploadImage(uri: Uri) {
         val imagesRef = storageRef.child("image/${auth.currentUser!!.uid}/userImage")
         val uploadTask = imagesRef.putFile(uri)
 
         uploadTask.addOnCompleteListener() { task ->
             if (task.isSuccessful) {
-                // Bild erfolgreich hochgeladen, jetzt Uri aktualisieren
                 imagesRef.downloadUrl.addOnCompleteListener { uriTask ->
                     if (uriTask.isSuccessful) {
                         selectedImageUri = uriTask.result
-                        setUserImage(selectedImageUri) // Update Uri in der Datenbank
+                        setUserImage(selectedImageUri)
                     } else {
-                        Log.e("Firebase", "Error getting download URL: ${uriTask.exception}")
+                        Log.e("Firebase", "Fehler beim Abrufen der Download-URL: ${uriTask.exception}")
                     }
                 }
             } else {
-                Log.e("Firebase", "Error uploading image: ${task.exception}")
+                Log.e("Firebase", "Fehler beim Hochladen des Bildes: ${task.exception}")
             }
         }
     }
 
-    // Aktualisiert das Uri in der Datenbank
+    /**
+     * Setzt die URI des Benutzerbildes in der Datenbank.
+     * @param uri Die URI des Benutzerbildes.
+     */
     private fun setUserImage(uri: Uri?) {
         uri?.let {
             userRef.update("userImage", it.toString())
                 .addOnSuccessListener {
-                    Log.d("Firebase", "Image Uri updated successfully")
+                    Log.d("Firebase", "Bild-URI erfolgreich aktualisiert")
                 }
                 .addOnFailureListener { e ->
-                    Log.e("Firebase", "Error updating image Uri: $e")
+                    Log.e("Firebase", "Fehler beim Aktualisieren der Bild-URI: $e")
                 }
         }
     }
 
-
+    /**
+     * Ruft die URI des Benutzerbildes ab.
+     * @return Die URI des Benutzerbildes.
+     */
     fun getImageUri(): Uri? {
         return selectedImageUri
     }
 
+    /**
+     * Speichert eine Notiz in Firestore.
+     * @param note Die zu speichernde Notiz.
+     */
     fun saveNote(note: Note) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let { user ->
-            val newNote = note.copy(userId = user.uid) // Setzen Sie den userId des aktuellen Benutzers
-            val noteDocRef = notesRef.document(user.uid) // Verwenden Sie die Benutzer-ID als Dokument-ID für die Notiz
-            noteDocRef.set(newNote)
-                .addOnSuccessListener {
-                    Log.d("Firebase", "Note saved successfully")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Error saving note: $e")
-                }
-        }
-    }
-
-
-
-    private fun loadNotes() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        currentUser?.let { user ->
-            notesRef.whereEqualTo("userId", user.uid).addSnapshotListener { value, error ->
-                if (error == null && value != null) {
-                    val myNotesList = value.map { it.toObject(Note::class.java) }
-                    _notes.value = myNotesList
-                }
+            // Die UserID der Notiz auf die des aktuellen Benutzers setzen
+            notesRef.whereEqualTo("userId", user.uid).get().addOnSuccessListener { querySnapshot ->
+                val noteNumber = querySnapshot.size() + 1 // Die Notiznummer ist die Anzahl der vorhandenen Notizen plus eins
+                val newNote = note.copy(userId = user.uid, noteNumber = noteNumber)
+                // Notiz in Firestore speichern
+                notesRef.add(newNote)
+                    .addOnSuccessListener { documentReference ->
+                        Log.d("Firebase", "Notiz erfolgreich gespeichert mit ID: ${documentReference.id}")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Firebase", "Fehler beim Speichern der Notiz: $e")
+                    }
             }
         }
     }
 
+    /**
+     * Lädt Notizen aus Firestore.
+     */
+    private fun loadNotes() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let { user ->
+            // Nur die Notizen des aktuellen Benutzers laden und nach Notiznummer sortieren
+            notesRef.whereEqualTo("userId", user.uid).orderBy("noteNumber")
+                .addSnapshotListener { value, error ->
+                    if (error == null && value != null) {
+                        val myNotesList = value.map { it.toObject(Note::class.java) }
+                        _notes.value = myNotesList
+                    }
+                }
+        }
+    }
 
-
+    /**
+     * Löscht eine Notiz aus Firestore.
+     * @param note Die zu löschende Notiz.
+     */
     fun deleteNote(note: Note) {
         notesRef.document(note.id).delete()
     }
 
+    /**
+     * Registriert einen neuen Benutzer.
+     * @param email Die E-Mail des Benutzers.
+     * @param password Das Passwort des Benutzers.
+     * @param userName Der Benutzername des Benutzers.
+     */
     fun register(email: String, password: String, userName: String) {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { authResult ->
             if (authResult.isSuccessful) {
                 auth.currentUser?.sendEmailVerification()
-                // Hier speichern Sie den Benutzernamen in Firebase
                 val newUser = User(userName = userName)
                 userRef = store.collection("Users").document(auth.currentUser!!.uid)
                 userRef.set(newUser)
                     .addOnSuccessListener {
-                        Log.d("Firebase", "User registered successfully")
+                        Log.d("Firebase", "Benutzer erfolgreich registriert")
                         currentUserId = auth.currentUser!!.uid
-                        loadNotes() // Notizen laden nach erfolgreicher Registrierung
+                        loadNotes()
                         logout()
                     }
                     .addOnFailureListener { e ->
-                        Log.e("Firebase", "Error registering user: $e")
+                        Log.e("Firebase", "Fehler beim Registrieren des Benutzers: $e")
                     }
             } else {
                 Log.e("Firebase", "${authResult.exception}")
@@ -179,7 +215,9 @@ class MainViewModel: ViewModel() {
         }
     }
 
-
+    /**
+     * Lädt Städte für den aktuellen Benutzer.
+     */
     fun loadCities() {
         viewModelScope.launch {
             try {
@@ -191,22 +229,26 @@ class MainViewModel: ViewModel() {
                             cities?.forEach { cityName ->
                                 fetchWeatherData(cityName)
                             }
-                            fetchedCities.clear() // Clear the fetchedCities list
-                            fetchedCities.addAll(cities ?: emptyList()) // Update the fetchedCities list with cities of the current user
+                            fetchedCities.clear()
+                            fetchedCities.addAll(cities ?: emptyList())
                         } else {
-                            Log.e("MainViewModel", "No such document")
+                            Log.e("MainViewModel", "Dokument existiert nicht")
                         }
                     }
                     .addOnFailureListener { e ->
-                        Log.e("MainViewModel", "Error loading cities: $e")
+                        Log.e("MainViewModel", "Fehler beim Laden der Städte: $e")
                     }
             } catch (e: Exception) {
-                Log.e("MainViewModel", "Error loading cities: $e")
+                Log.e("MainViewModel", "Fehler beim Laden der Städte: $e")
             }
         }
     }
 
-
+    /**
+     * Meldet einen Benutzer an.
+     * @param email Die E-Mail des Benutzers.
+     * @param password Das Passwort des Benutzers.
+     */
     fun login(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { authResult ->
             if (authResult.isSuccessful) {
@@ -217,7 +259,7 @@ class MainViewModel: ViewModel() {
                     loadNotes()
                     loadCities()
                 } else {
-                    Log.e("Firebase", "Email is not verified")
+                    Log.e("Firebase", "E-Mail ist nicht verifiziert")
                 }
             } else {
                 Log.e("Firebase", "${authResult.exception}")
@@ -225,19 +267,33 @@ class MainViewModel: ViewModel() {
         }
     }
 
-
+    /**
+     * Sendet eine E-Mail zur Zurücksetzung des Passworts.
+     * @param email Die E-Mail des Benutzers.
+     */
     fun resetPassword(email: String) {
         auth.sendPasswordResetEmail(email)
     }
 
+    /**
+     * Meldet den aktuellen Benutzer ab.
+     */
     fun logout() {
         auth.signOut()
         _currentUser.value = auth.currentUser
     }
 
+    /**
+     * Aktualisiert die Benutzerinformationen.
+     * @param user Das Benutzerobjekt mit den aktualisierten Informationen.
+     */
     fun updateUser(user: User) {
         userRef.set(user)
     }
+
+    /**
+     * Lädt alle Benutzer.
+     */
     fun loadUsers() {
         usersRef.addSnapshotListener { snapshot, error ->
             if (error == null && snapshot != null) {
@@ -247,6 +303,10 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    /**
+     * Legt den aktuellen Chat fest.
+     * @param chatPartnerId Die ID des Chat-Partners.
+     */
     fun setCurrentChat(chatPartnerId: String) {
         val chatId = chatIdGenerator(currentUserId, chatPartnerId)
         currentChat = store.collection("Chats").document(chatId)
@@ -258,40 +318,56 @@ class MainViewModel: ViewModel() {
                     if (!result.exists()) {
                         currentChat.set(Chat())
                     }
-
                 }
             }
         }
     }
 
+    /**
+     * Sendet eine neue Nachricht im aktuellen Chat.
+     * @param text Der Text der Nachricht.
+     */
     fun sendNewMessage(text: String) {
         currentChat.update("messages", FieldValue.arrayUnion(Message(text, currentUserId)))
     }
 
+    /**
+     * Generiert eine Chat-ID.
+     * @param id1 Die ID des ersten Teilnehmers.
+     * @param id2 Die ID des zweiten Teilnehmers.
+     * @return Die generierte Chat-ID.
+     */
     private fun chatIdGenerator(id1: String, id2: String): String {
         var ids = listOf(id1, id2)
         ids = ids.sorted()
         return ids[0] + ids[1]
     }
 
+    /**
+     * Speichert eine Stadt für den aktuellen Benutzer.
+     * @param cityName Der Name der zu speichernden Stadt.
+     */
     fun saveCity(cityName: String) {
         viewModelScope.launch {
             try {
-                // Speichern der Stadt unter der Benutzer-ID in der Firebase-Datenbank
                 val userDocRef = store.collection("Users").document(currentUserId)
                 userDocRef.update("cities", FieldValue.arrayUnion(cityName))
                     .addOnSuccessListener {
-                        Log.d("MainViewModel", "City saved successfully")
-                        fetchWeatherData(cityName) // Daten für die neu hinzugefügte Stadt abrufen
+                        Log.d("MainViewModel", "Stadt erfolgreich gespeichert")
+                        fetchWeatherData(cityName)
                     }
                     .addOnFailureListener { e ->
-                        Log.e("MainViewModel", "Error saving city: $e")
+                        Log.e("MainViewModel", "Fehler beim Speichern der Stadt: $e")
                     }
             } catch (e: Exception) {
-                Log.e("MainViewModel", "Error saving city: $e")
+                Log.e("MainViewModel", "Fehler beim Speichern der Stadt: $e")
             }
         }
     }
+
+    /**
+     * Führt notwendige Aktionen beim Start der App aus.
+     */
     fun onAppStart() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let { user ->
@@ -300,25 +376,27 @@ class MainViewModel: ViewModel() {
             currentUserId = auth.currentUser!!.uid
         }
     }
+
+    /**
+     * Löscht eine Stadt aus den gespeicherten Städten des aktuellen Benutzers.
+     * @param cityName Der Name der zu löschenden Stadt.
+     */
     fun deleteCity(cityName: String) {
         viewModelScope.launch {
             try {
                 val userDocRef = store.collection("Users").document(currentUserId)
                 userDocRef.update("cities", FieldValue.arrayRemove(cityName))
                     .addOnSuccessListener {
-                        Log.d("MainViewModel", "City deleted successfully")
-                        // Aktualisiere die Liste der Wetterdaten, um die gelöschte Stadt zu entfernen
+                        Log.d("MainViewModel", "Stadt erfolgreich gelöscht")
                         val updatedWeatherList = _weatherList.value?.filter { it.name != cityName }
                         _weatherList.value = updatedWeatherList?.toMutableList()
                     }
                     .addOnFailureListener { e ->
-                        Log.e("MainViewModel", "Error deleting city: $e")
+                        Log.e("MainViewModel", "Fehler beim Löschen der Stadt: $e")
                     }
             } catch (e: Exception) {
-                Log.e("MainViewModel", "Error deleting city: $e")
+                Log.e("MainViewModel", "Fehler beim Löschen der Stadt: $e")
             }
         }
     }
-
-
 }

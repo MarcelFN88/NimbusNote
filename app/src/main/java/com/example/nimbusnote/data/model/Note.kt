@@ -12,5 +12,6 @@ data class Note(
     val text: String = "",
     val userId: String = "",
     @DocumentId
-    val id: String = ""
+    var id: String = "",
+    val noteNumber: Int = 0,
 )

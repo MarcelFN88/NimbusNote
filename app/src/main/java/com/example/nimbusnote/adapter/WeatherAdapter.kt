@@ -15,11 +15,22 @@ import com.example.nimbusnote.R
 import com.example.nimbusnote.data.model.WeatherData
 import com.example.nimbusnote.data.remote.ApiService
 
+/**
+ * Adapter zur Anzeige von Wetterdaten in einem RecyclerView.
+ *
+ * @property weatherList Liste der Wetterdaten.
+ * @property onItemClickListener Lambda-Ausdruck, der aufgerufen wird, wenn ein Wetterelement angeklickt wird.
+ */
 class WeatherAdapter(
     private var weatherList: MutableList<WeatherData>,
     private val onItemClickListener: (WeatherData) -> Unit
 ) : RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
 
+    /**
+     * ViewHolder für Wetterdaten.
+     *
+     * @param view Die View, die den ViewHolder darstellt.
+     */
     inner class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val cityNameTextView: TextView = view.findViewById(R.id.cityNameTextView)
         val temperatureTextView: TextView = view.findViewById(R.id.temperatureTextView)
@@ -33,15 +44,27 @@ class WeatherAdapter(
                     onItemClickListener.invoke(item)
                 }
             }
-
         }
     }
 
+    /**
+     * Erstellt einen neuen ViewHolder, wenn dies erforderlich ist.
+     *
+     * @param parent Die ViewGroup, in die die neue Ansicht eingefügt wird.
+     * @param viewType Der Ansichtstyp der neuen Ansicht.
+     * @return WeatherViewHolder mit dem aufgeblasenen Layout.
+     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_weather, parent, false)
         return WeatherViewHolder(view)
     }
 
+    /**
+     * Bindet die Daten an den ViewHolder an der angegebenen Position.
+     *
+     * @param holder Der ViewHolder, an den die Daten gebunden werden sollen.
+     * @param position Die Position des Elements im Datensatz.
+     */
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
         val item = weatherList[position]
 
@@ -55,21 +78,33 @@ class WeatherAdapter(
             .placeholder(R.drawable.ic_placeholder)
             .error(R.drawable.ic_error)
             .into(holder.weatherIconImageView)
-
-
     }
 
+    /**
+     * Gibt die Gesamtzahl der Elemente im Datensatz zurück.
+     *
+     * @return Int, der die Gesamtzahl der Elemente darstellt.
+     */
     override fun getItemCount() = weatherList.size
 
+    /**
+     * Aktualisiert die Wetterliste mit einer neuen Liste.
+     *
+     * @param newWeatherList Die neue Liste von Wetterdaten.
+     */
     fun updateWeatherList(newWeatherList: List<WeatherData>) {
         this.weatherList = newWeatherList.toMutableList()
         notifyDataSetChanged()
     }
+
+    /**
+     * Setzt die Wetterliste auf eine neue Liste.
+     *
+     * @param newWeatherList Die neue Liste von Wetterdaten.
+     */
     fun setWeatherList(newWeatherList: List<WeatherData>) {
         weatherList.clear() // Vorhandene Daten löschen
         weatherList.addAll(newWeatherList) // Neue Daten hinzufügen
         notifyDataSetChanged()
     }
-
-
 }
